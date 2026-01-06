@@ -1,4 +1,4 @@
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import { BarcodeData } from '../types/barcode';
 import { generateBarcodeToCanvas } from './barcodeGenerator';
 import { A4_WIDTH_MM, A4_HEIGHT_MM, A4_MARGIN_MM } from './printLayout';
