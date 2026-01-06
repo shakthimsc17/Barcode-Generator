@@ -11,8 +11,6 @@ export const generatePDF = async (barcodes: BarcodeData[]): Promise<void> => {
   });
 
   const margin = A4_MARGIN_MM;
-  const availableWidth = A4_WIDTH_MM - (margin * 2);
-  const availableHeight = A4_HEIGHT_MM - (margin * 2);
 
   let currentY = margin;
   let currentX = margin;
@@ -23,9 +21,6 @@ export const generatePDF = async (barcodes: BarcodeData[]): Promise<void> => {
     const spacing = 2; // 2mm spacing between labels
     const rowHeight = labelHeight + spacing;
     const padding = 2; // Internal padding for label
-
-    // Calculate how many labels fit per row
-    const labelsPerRow = Math.floor((availableWidth + spacing) / (labelWidth + spacing));
 
     // Generate barcode canvas once per barcode type
     const barcodeCanvas = generateBarcodeToCanvas(barcode.itemCode);
