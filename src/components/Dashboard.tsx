@@ -154,24 +154,24 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
               </div>
 
               {/* 2. Item Code */}
-              <div>
+              <div className={formData.barcodeType === 'EAN13' ? 'md:col-span-2' : ''}>
                 <label htmlFor="itemCode" className="block text-sm font-semibold text-gray-700 mb-2">
                   Item Code <span className="text-red-500">*</span>
                 </label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-stretch">
                   <input
                     type="text"
                     id="itemCode"
                     value={formData.itemCode}
                     onChange={(e) => handleInputChange('itemCode', e.target.value)}
                     required
-                    className="flex-1 px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    className="flex-1 px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all min-w-0"
                   />
                   {formData.barcodeType === 'EAN13' && (
                     <button
                       type="button"
                       onClick={generateRandomEAN13}
-                      className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold shadow-md hover:shadow-lg transition-all whitespace-nowrap"
+                      className="px-3 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold shadow-md hover:shadow-lg transition-all whitespace-nowrap flex-shrink-0"
                       title="Generate random 12-digit code"
                     >
                       🎲 Generate
