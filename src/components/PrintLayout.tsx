@@ -122,7 +122,7 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                   width: `${labelWidth}mm`,
                   height: `${labelHeight}mm`,
                   pageBreakInside: 'avoid',
-                  padding: '2mm',
+                  padding: '1.5mm',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -130,28 +130,30 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                 }}
               >
                 {/* Header - Company Name */}
-                <div style={{ marginBottom: '2mm' }}>
+                <div style={{ marginBottom: '0.5mm' }}>
                   <h3 style={{ 
                     fontSize: `${headerFontSize}px`, 
                     margin: 0, 
                     padding: 0,
                     textAlign: 'center',
                     fontWeight: 'bold',
-                    color: '#111827'
+                    color: '#111827',
+                    lineHeight: 1.2
                   }}>
                     {label.header || 'POS BARCODE GENERATOR'}
                   </h3>
                 </div>
 
                 {/* Item Name after company name */}
-                <div style={{ marginBottom: '1mm' }}>
+                <div style={{ marginBottom: '0.5mm' }}>
                   <p style={{ 
                     fontSize: `${itemNameFontSize}px`, 
                     margin: 0, 
                     padding: 0,
                     textAlign: 'center',
                     fontWeight: 'semibold',
-                    color: '#374151'
+                    color: '#374151',
+                    lineHeight: 1.2
                   }}>
                     {label.itemName}
                   </p>
@@ -163,7 +165,7 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  margin: '1mm 0',
+                  margin: '0.5mm 0',
                   minHeight: `${labelHeight * 0.35}mm`
                 }}>
                   <img
@@ -182,8 +184,8 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
 
                 {/* Item Code below barcode */}
                 <div style={{ 
-                  marginTop: '1mm',
-                  marginBottom: '1mm',
+                  marginTop: '0.5mm',
+                  marginBottom: '0.5mm',
                   textAlign: 'center'
                 }}>
                   <p style={{ 
@@ -191,7 +193,8 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                     margin: 0, 
                     padding: 0,
                     color: '#374151',
-                    fontWeight: 'normal'
+                    fontWeight: 'normal',
+                    lineHeight: 1.2
                   }}>
                     {label.itemCode}
                   </p>
@@ -200,16 +203,17 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                 {/* Additional Lines */}
                 {label.lines.length > 0 && label.lines.some(line => line.trim()) && (
                   <div style={{ 
-                    marginBottom: '1mm',
+                    marginBottom: '0.5mm',
                     textAlign: 'center'
                   }}>
                     {label.lines.map((line, lineIndex) => (
                       line.trim() && (
                         <p key={lineIndex} style={{ 
                           fontSize: `${lineFontSize}px`, 
-                          margin: '0.5mm 0',
+                          margin: '0.2mm 0',
                           padding: 0,
-                          color: '#374151'
+                          color: '#374151',
+                          lineHeight: 1.2
                         }}>
                           {line}
                         </p>
@@ -221,7 +225,7 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                 {/* Bottom Section - Pricing */}
                 <div style={{ 
                   marginTop: 'auto',
-                  paddingTop: '1mm',
+                  paddingTop: '0.5mm',
                   borderTop: '1px solid #d1d5db',
                   display: 'flex',
                   justifyContent: 'space-between',

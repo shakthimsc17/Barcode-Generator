@@ -29,14 +29,16 @@ export const generatePDF = async (barcodes: BarcodeData[]): Promise<void> => {
     const barcodeDataUrl = barcodeCanvas.toDataURL('image/png');
     
     // Calculate font sizes based on label height
-    const headerFontSize = Math.max(8, Math.min(12, labelHeight * 0.15));
-    const itemNameFontSize = Math.max(10, Math.min(14, labelHeight * 0.18)); // Increased size
-    const lineFontSize = Math.max(6, Math.min(8, labelHeight * 0.1));
-    const priceFontSize = Math.max(9, Math.min(12, labelHeight * 0.2)); // Increased for better visibility
+    const headerFontSize = Math.max(6, Math.min(12, labelHeight * 0.15));
+    const itemNameFontSize = Math.max(8, Math.min(14, labelHeight * 0.18));
+    const lineFontSize = Math.max(5, Math.min(8, labelHeight * 0.1));
+    const priceFontSize = Math.max(7, Math.min(12, labelHeight * 0.2));
     
-    // Barcode dimensions - proportional to label size
+    // Barcode dimensions - proportional to label size, ensuring minimum scannable size
+    // Minimum barcode height: 10mm for CODE128 scannability
+    // Maximum: 35% of label height to leave room for text
     const barcodeImgWidth = labelWidth - (padding * 2);
-    const barcodeImgHeight = Math.max(12, Math.min(20, labelHeight * 0.35));
+    const barcodeImgHeight = Math.max(10, Math.min(labelHeight * 0.35, 20));
 
     // Generate all labels for this barcode
     for (let labelIndex = 0; labelIndex < barcode.numberOfLabels; labelIndex++) {
@@ -51,7 +53,7 @@ export const generatePDF = async (barcodes: BarcodeData[]): Promise<void> => {
       pdf.setDrawColor(200, 200, 200);
       pdf.rect(currentX, currentY, labelWidth, labelHeight);
 
-      let yPosition = currentY + padding + 2;
+      let yPosition = currentY + padding + 1;
 
       // Add header (company name) - centered
       pdf.setFontSize(headerFontSize);
@@ -59,34 +61,34 @@ export const generatePDF = async (barcodes: BarcodeData[]): Promise<void> => {
       const headerText = barcode.header || 'POS BARCODE GENERATOR';
       const headerWidth = pdf.getTextWidth(headerText);
       pdf.text(headerText, currentX + (labelWidth / 2) - (headerWidth / 2), yPosition);
-      yPosition += 5; // Increased spacing
+      yPosition += headerFontSize * 0.4 + 1; // Reduced spacing: font height * 0.4 + 1mm
 
       // Add item name after company name (centered)
       pdf.setFontSize(itemNameFontSize);
       pdf.setFont('helvetica', 'bold');
       const itemNameWidth = pdf.getTextWidth(barcode.itemName);
       pdf.text(barcode.itemName, currentX + (labelWidth / 2) - (itemNameWidth / 2), yPosition);
-      yPosition += 4;
+      yPosition += itemNameFontSize * 0.3 + 1; // Reduced spacing: font height * 0.3 + 1mm
 
       // Add barcode image
       const barcodeY = yPosition;
       pdf.addImage(barcodeDataUrl, 'PNG', currentX + padding, barcodeY, barcodeImgWidth, barcodeImgHeight);
-      yPosition += barcodeImgHeight + 2;
+      yPosition += barcodeImgHeight + 1; // Reduced spacing: 1mm after barcode
 
       // Add item code below barcode (centered)
       pdf.setFontSize(itemNameFontSize);
       pdf.setFont('helvetica', 'normal');
       const itemCodeWidth = pdf.getTextWidth(barcode.itemCode);
       pdf.text(barcode.itemCode, currentX + (labelWidth / 2) - (itemCodeWidth / 2), yPosition);
-      yPosition += 3;
+      yPosition += itemNameFontSize * 0.3 + 1; // Reduced spacing: font height * 0.3 + 1mm
 
       // Add additional lines (centered)
       for (const line of barcode.lines) {
-        if (line.trim() && yPosition < currentY + labelHeight - 8) {
+        if (line.trim() && yPosition < currentY + labelHeight - 6) {
           pdf.setFontSize(lineFontSize);
           const lineWidth = pdf.getTextWidth(line);
           pdf.text(line, currentX + (labelWidth / 2) - (lineWidth / 2), yPosition);
-          yPosition += 3;
+          yPosition += lineFontSize * 0.4 + 0.5; // Reduced spacing: font height * 0.4 + 0.5mm
         }
       }
 
@@ -95,7 +97,7 @@ export const generatePDF = async (barcodes: BarcodeData[]): Promise<void> => {
       pdf.setFont('helvetica', 'bold');
       const mrpText = `MRP: Rs.${barcode.mrp}`;
       const saleText = `Sale: Rs.${barcode.salePrice}`;
-      const priceY = currentY + labelHeight - padding - 2;
+      const priceY = currentY + labelHeight - padding - 1; // Reduced spacing: 1mm from bottom
       
       // MRP on the left
       pdf.text(mrpText, currentX + padding, priceY);
