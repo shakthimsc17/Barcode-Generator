@@ -17,6 +17,7 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
     salePrice: 0,
     labelSize: LABEL_SIZES[0], // Default to 12 labels
     strikeMrp: false,
+    barcodeType: 'CODE128', // Default barcode type
   });
 
   // Local state for numberOfLabels input to allow clearing
@@ -57,12 +58,33 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
     }));
   };
 
+  const generateRandomEAN13 = () => {
+    // Generate a random 12-digit number for EAN-13
+    // First digit should be between 0-9 (not starting with 0 for better distribution)
+    const firstDigit = Math.floor(Math.random() * 9) + 1; // 1-9
+    // Remaining 11 digits
+    const remainingDigits = Array.from({ length: 11 }, () => 
+      Math.floor(Math.random() * 10)
+    ).join('');
+    const randomCode = firstDigit + remainingDigits;
+    handleInputChange('itemCode', randomCode);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.itemName || !formData.itemCode) {
       alert('Please fill in Item Name and Item Code');
       return;
+    }
+
+    // Validate EAN-13: must be exactly 12 digits (check digit will be auto-calculated)
+    if (formData.barcodeType === 'EAN13') {
+      const digitsOnly = formData.itemCode.replace(/\D/g, '');
+      if (digitsOnly.length !== 12) {
+        alert('EAN-13 requires exactly 12 digits. Please enter a 12-digit number.');
+        return;
+      }
     }
 
     const newBarcode: BarcodeData = {
@@ -74,7 +96,7 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
 
     onAddBarcode(newBarcode);
 
-    // Reset form but keep header and label size
+    // Reset form but keep header, label size, and barcode type
     setFormData({
       itemName: '',
       itemCode: '',
@@ -85,6 +107,7 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
       salePrice: 0,
       labelSize: formData.labelSize,
       strikeMrp: false,
+      barcodeType: formData.barcodeType,
     });
     setNumberOfLabelsInput('1');
   };
@@ -114,6 +137,55 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
                 />
               </div>
 
+              {/* 1. Barcode Type */}
+              <div>
+                <label htmlFor="barcodeType" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Barcode Type
+                </label>
+                <select
+                  id="barcodeType"
+                  value={formData.barcodeType}
+                  onChange={(e) => handleInputChange('barcodeType', e.target.value as 'CODE128' | 'EAN13')}
+                  className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
+                >
+                  <option value="CODE128">CODE128 (Alphanumeric)</option>
+                  <option value="EAN13">EAN-13 (12 digits)</option>
+                </select>
+              </div>
+
+              {/* 2. Item Code */}
+              <div>
+                <label htmlFor="itemCode" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Item Code <span className="text-red-500">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    id="itemCode"
+                    value={formData.itemCode}
+                    onChange={(e) => handleInputChange('itemCode', e.target.value)}
+                    required
+                    className="flex-1 px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  />
+                  {formData.barcodeType === 'EAN13' && (
+                    <button
+                      type="button"
+                      onClick={generateRandomEAN13}
+                      className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold shadow-md hover:shadow-lg transition-all whitespace-nowrap"
+                      title="Generate random 12-digit code"
+                    >
+                      🎲 Generate
+                    </button>
+                  )}
+                </div>
+                {formData.barcodeType === 'EAN13' && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    EAN-13 requires exactly 12 digits (check digit will be auto-calculated)
+                  </p>
+                )}
+              </div>
+
+              {/* 3. Item Name */}
               <div>
                 <label htmlFor="itemName" className="block text-sm font-semibold text-gray-700 mb-2">
                   Item Name <span className="text-red-500">*</span>
@@ -128,20 +200,7 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
                 />
               </div>
 
-              <div>
-                <label htmlFor="itemCode" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Item Code <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="itemCode"
-                  value={formData.itemCode}
-                  onChange={(e) => handleInputChange('itemCode', e.target.value)}
-                  required
-                  className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                />
-              </div>
-
+              {/* 4. Label Size */}
               <div>
                 <label htmlFor="labelSize" className="block text-sm font-semibold text-gray-700 mb-2">
                   Label Size
@@ -160,6 +219,7 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
                 </select>
               </div>
 
+              {/* 5. Number of Labels */}
               <div>
                 <label htmlFor="numberOfLabels" className="block text-sm font-semibold text-gray-700 mb-2">
                   Number of Labels
@@ -226,6 +286,7 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
                 </div>
               </div>
 
+              {/* 6. MRP */}
               <div>
                 <label htmlFor="mrp" className="block text-sm font-semibold text-gray-700 mb-2">
                   MRP (Rs.)
@@ -241,9 +302,10 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
                 />
               </div>
 
+              {/* 7. Offer Price */}
               <div>
                 <label htmlFor="salePrice" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Sale Price (Rs.)
+                  Offer Price (Rs.)
                 </label>
                 <input
                   type="number"

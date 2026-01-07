@@ -27,13 +27,13 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
             // Ensure the image element exists
             const imgElement = document.getElementById(label.barcodeId);
             if (imgElement) {
-              generateBarcode(label.barcode.itemCode, label.barcodeId);
+              generateBarcode(label.barcode.itemCode, label.barcodeId, label.barcode.barcodeType || 'CODE128');
             } else {
               // If element doesn't exist yet, try again after a short delay
               setTimeout(() => {
                 const retryElement = document.getElementById(label.barcodeId);
                 if (retryElement && label.barcode.itemCode) {
-                  generateBarcode(label.barcode.itemCode, label.barcodeId);
+                  generateBarcode(label.barcode.itemCode, label.barcodeId, label.barcode.barcodeType || 'CODE128');
                 }
               }, 100);
             }
@@ -62,7 +62,7 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
         if (label.barcode.itemCode) {
           const imgElement = document.getElementById(label.barcodeId);
           if (imgElement) {
-            generateBarcode(label.barcode.itemCode, label.barcodeId);
+            generateBarcode(label.barcode.itemCode, label.barcodeId, label.barcode.barcodeType || 'CODE128');
           }
         }
       });
@@ -107,11 +107,23 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
             const labelHeight = label.labelSize?.height || 50;
             const barcodeId = `print-barcode-${label.id}-${index}`;
             
-            // Calculate font sizes based on label height
-            const headerFontSize = Math.max(8, Math.min(12, labelHeight * 0.15));
-            const itemNameFontSize = Math.max(10, Math.min(14, labelHeight * 0.18)); // Increased size
-            const lineFontSize = Math.max(6, Math.min(8, labelHeight * 0.1));
-            const priceFontSize = Math.max(9, Math.min(12, labelHeight * 0.2)); // Increased for better visibility
+            // Adaptive sizing for small labels
+            const isSmallLabel = labelHeight < 25; // Labels smaller than 25mm
+            const headerFontSize = isSmallLabel 
+              ? Math.max(5, Math.min(8, labelHeight * 0.12))
+              : Math.max(8, Math.min(12, labelHeight * 0.15));
+            const itemNameFontSize = isSmallLabel
+              ? Math.max(6, Math.min(10, labelHeight * 0.15))
+              : Math.max(10, Math.min(14, labelHeight * 0.18));
+            const lineFontSize = Math.max(4, Math.min(7, labelHeight * 0.1));
+            const priceFontSize = isSmallLabel
+              ? Math.max(5, Math.min(8, labelHeight * 0.15))
+              : Math.max(9, Math.min(12, labelHeight * 0.2));
+            
+            // Barcode height - adaptive for small labels
+            const barcodeHeightRatio = isSmallLabel ? 0.25 : 0.35;
+            const barcodeMaxHeight = isSmallLabel ? 12 : 20;
+            const barcodeMinHeight = isSmallLabel ? 8 : 10;
             
             return (
               <div
@@ -122,7 +134,7 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                   width: `${labelWidth}mm`,
                   height: `${labelHeight}mm`,
                   pageBreakInside: 'avoid',
-                  padding: '1.5mm',
+                  padding: isSmallLabel ? '1mm' : '1.5mm',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -130,7 +142,7 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                 }}
               >
                 {/* Header - Company Name */}
-                <div style={{ marginBottom: '0.5mm' }}>
+                <div style={{ marginBottom: isSmallLabel ? '0.3mm' : '0.5mm' }}>
                   <h3 style={{ 
                     fontSize: `${headerFontSize}px`, 
                     margin: 0, 
@@ -138,14 +150,14 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                     textAlign: 'center',
                     fontWeight: 'bold',
                     color: '#111827',
-                    lineHeight: 1.2
+                    lineHeight: 1.1
                   }}>
                     {label.header || 'POS BARCODE GENERATOR'}
                   </h3>
                 </div>
 
                 {/* Item Name after company name */}
-                <div style={{ marginBottom: '0.5mm' }}>
+                <div style={{ marginBottom: isSmallLabel ? '0.3mm' : '0.5mm' }}>
                   <p style={{ 
                     fontSize: `${itemNameFontSize}px`, 
                     margin: 0, 
@@ -153,7 +165,7 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                     textAlign: 'center',
                     fontWeight: 'semibold',
                     color: '#374151',
-                    lineHeight: 1.2
+                    lineHeight: 1.1
                   }}>
                     {label.itemName}
                   </p>
@@ -165,8 +177,8 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  margin: '0.5mm 0',
-                  minHeight: `${labelHeight * 0.35}mm`
+                  margin: isSmallLabel ? '0.3mm 0' : '0.5mm 0',
+                  minHeight: `${Math.max(barcodeMinHeight, labelHeight * barcodeHeightRatio)}mm`
                 }}>
                   <img
                     id={barcodeId}
@@ -174,34 +186,36 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                     src=""
                     style={{ 
                       maxWidth: '100%',
-                      maxHeight: `${labelHeight * 0.35}mm`,
+                      maxHeight: `${Math.max(barcodeMinHeight, Math.min(labelHeight * barcodeHeightRatio, barcodeMaxHeight))}mm`,
                       objectFit: 'contain',
                       display: 'block',
-                      minHeight: '20px'
+                      minHeight: isSmallLabel ? '8mm' : '10mm'
                     }}
                   />
                 </div>
 
-                {/* Item Code below barcode */}
-                <div style={{ 
-                  marginTop: '0.5mm',
-                  marginBottom: '0.5mm',
-                  textAlign: 'center'
-                }}>
-                  <p style={{ 
-                    fontSize: `${itemNameFontSize}px`, 
-                    margin: 0, 
-                    padding: 0,
-                    color: '#374151',
-                    fontWeight: 'normal',
-                    lineHeight: 1.2
+                {/* Item Code below barcode - skip for small labels */}
+                {!isSmallLabel && (
+                  <div style={{ 
+                    marginTop: '0.5mm',
+                    marginBottom: '0.5mm',
+                    textAlign: 'center'
                   }}>
-                    {label.itemCode}
-                  </p>
-                </div>
+                    <p style={{ 
+                      fontSize: `${itemNameFontSize}px`, 
+                      margin: 0, 
+                      padding: 0,
+                      color: '#374151',
+                      fontWeight: 'normal',
+                      lineHeight: 1.1
+                    }}>
+                      {label.itemCode}
+                    </p>
+                  </div>
+                )}
 
-                {/* Additional Lines */}
-                {label.lines.length > 0 && label.lines.some(line => line.trim()) && (
+                {/* Additional Lines - skip for small labels */}
+                {!isSmallLabel && label.lines.length > 0 && label.lines.some(line => line.trim()) && (
                   <div style={{ 
                     marginBottom: '0.5mm',
                     textAlign: 'center'
@@ -213,7 +227,7 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                           margin: '0.2mm 0',
                           padding: 0,
                           color: '#374151',
-                          lineHeight: 1.2
+                          lineHeight: 1.1
                         }}>
                           {line}
                         </p>
@@ -225,7 +239,7 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                 {/* Bottom Section - Pricing */}
                 <div style={{ 
                   marginTop: 'auto',
-                  paddingTop: '0.5mm',
+                  paddingTop: isSmallLabel ? '0.3mm' : '0.5mm',
                   borderTop: '1px solid #d1d5db',
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -248,7 +262,7 @@ export const PrintLayout = ({ barcodes }: PrintLayoutProps) => {
                     fontWeight: 'bold',
                     color: '#111827'
                   }}>
-                    Sale: Rs.{label.salePrice}
+                    Offer: Rs.{label.salePrice}
                   </span>
                 </div>
               </div>

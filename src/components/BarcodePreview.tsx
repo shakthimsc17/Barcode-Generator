@@ -12,9 +12,9 @@ export const BarcodePreview = ({ formData }: BarcodePreviewProps) => {
 
   useEffect(() => {
     if (formData.itemCode) {
-      generateBarcode(formData.itemCode, barcodeId);
+      generateBarcode(formData.itemCode, barcodeId, formData.barcodeType || 'CODE128');
     }
-  }, [formData.itemCode]);
+  }, [formData.itemCode, formData.barcodeType]);
 
   return (
     <div className="bg-white border-2 border-gray-400 rounded-lg p-3 shadow-lg w-full">
@@ -68,7 +68,7 @@ export const BarcodePreview = ({ formData }: BarcodePreviewProps) => {
           <span className={formData.strikeMrp ? 'line-through' : ''}>
             MRP: Rs.{formData.mrp || 0}
           </span>
-          <span>Sale: Rs.{formData.salePrice || 0}</span>
+          <span>Offer: Rs.{formData.salePrice || 0}</span>
         </div>
       </div>
     </div>

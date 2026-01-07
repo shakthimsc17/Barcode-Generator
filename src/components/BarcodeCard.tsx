@@ -13,9 +13,9 @@ export const BarcodeCard = ({ barcode, onDelete }: BarcodeCardProps) => {
 
   useEffect(() => {
     if (barcode.itemCode) {
-      generateBarcode(barcode.itemCode, barcodeId);
+      generateBarcode(barcode.itemCode, barcodeId, barcode.barcodeType || 'CODE128');
     }
-  }, [barcode.itemCode, barcodeId]);
+  }, [barcode.itemCode, barcode.barcodeType, barcodeId]);
 
   return (
     <div className="border-2 border-gray-300 rounded-lg p-4 bg-white shadow-md hover:shadow-lg transition-all hover:border-blue-400">
@@ -58,7 +58,7 @@ export const BarcodeCard = ({ barcode, onDelete }: BarcodeCardProps) => {
         <span className={barcode.strikeMrp ? 'line-through' : ''}>
           MRP: Rs.{barcode.mrp}
         </span>
-        <span>Sale: Rs.{barcode.salePrice}</span>
+        <span>Offer: Rs.{barcode.salePrice}</span>
       </div>
       
       <div className="mt-3 pt-2 border-t border-gray-200 text-xs text-gray-500">

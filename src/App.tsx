@@ -17,6 +17,7 @@ function App() {
           createdAt: new Date(b.createdAt),
           labelSize: b.labelSize || { labelCount: 12, width: 100, height: 44, label: '12 labels (100×44mm)' },
           strikeMrp: b.strikeMrp || false, // Default to false if not present
+          barcodeType: b.barcodeType || 'CODE128', // Default to CODE128 if not present
         }));
       } catch (e) {
         return [];
@@ -44,8 +45,10 @@ function App() {
           const itemCode = (labelElement as HTMLElement).dataset.itemCode;
           if (itemCode) {
             // Import and use generateBarcode
+            // Note: This is a fallback handler, barcode type will default to CODE128
+            // The PrintLayout component handles barcode type properly
             import('./utils/barcodeGenerator').then(({ generateBarcode }) => {
-              generateBarcode(itemCode, barcodeId);
+              generateBarcode(itemCode, barcodeId, 'CODE128');
             });
           }
         }

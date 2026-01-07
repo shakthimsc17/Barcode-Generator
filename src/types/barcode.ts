@@ -19,6 +19,8 @@ export const LABEL_SIZES: LabelSize[] = [
   { labelCount: 72, width: 30, height: 21.3, label: '72 labels (30×21mm) - 6×12 grid' },
 ];
 
+export type BarcodeType = 'CODE128' | 'EAN13';
+
 export interface BarcodeData {
   id: string;
   itemName: string;
@@ -30,6 +32,7 @@ export interface BarcodeData {
   salePrice: number;
   labelSize: LabelSize;
   strikeMrp: boolean;
+  barcodeType: BarcodeType;
   createdAt: Date;
 }
 
@@ -43,5 +46,6 @@ export interface BarcodeFormData {
   salePrice: number;
   labelSize: LabelSize;
   strikeMrp: boolean;
+  barcodeType: BarcodeType;
 }
 

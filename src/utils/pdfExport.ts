@@ -23,22 +23,31 @@ export const generatePDF = async (barcodes: BarcodeData[]): Promise<void> => {
     const padding = 2; // Internal padding for label
 
     // Generate barcode canvas once per barcode type
-    const barcodeCanvas = generateBarcodeToCanvas(barcode.itemCode);
+    const barcodeCanvas = generateBarcodeToCanvas(barcode.itemCode, barcode.barcodeType || 'CODE128');
     if (!barcodeCanvas) continue;
 
     const barcodeDataUrl = barcodeCanvas.toDataURL('image/png');
     
-    // Calculate font sizes based on label height
-    const headerFontSize = Math.max(6, Math.min(12, labelHeight * 0.15));
-    const itemNameFontSize = Math.max(8, Math.min(14, labelHeight * 0.18));
-    const lineFontSize = Math.max(5, Math.min(8, labelHeight * 0.1));
-    const priceFontSize = Math.max(7, Math.min(12, labelHeight * 0.2));
+    // Calculate font sizes based on label height - more aggressive for small labels
+    const isSmallLabel = labelHeight < 25; // Labels smaller than 25mm
+    const headerFontSize = isSmallLabel 
+      ? Math.max(5, Math.min(8, labelHeight * 0.12))
+      : Math.max(6, Math.min(12, labelHeight * 0.15));
+    const itemNameFontSize = isSmallLabel
+      ? Math.max(6, Math.min(10, labelHeight * 0.15))
+      : Math.max(8, Math.min(14, labelHeight * 0.18));
+    const lineFontSize = Math.max(4, Math.min(7, labelHeight * 0.1));
+    const priceFontSize = isSmallLabel
+      ? Math.max(5, Math.min(8, labelHeight * 0.15))
+      : Math.max(7, Math.min(12, labelHeight * 0.2));
     
-    // Barcode dimensions - proportional to label size, ensuring minimum scannable size
-    // Minimum barcode height: 10mm for CODE128 scannability
-    // Maximum: 35% of label height to leave room for text
+    // Barcode dimensions - adaptive for small labels
+    // For very small labels (< 25mm), use smaller barcode to prevent overlap
     const barcodeImgWidth = labelWidth - (padding * 2);
-    const barcodeImgHeight = Math.max(10, Math.min(labelHeight * 0.35, 20));
+    const barcodeHeightRatio = isSmallLabel ? 0.25 : 0.35; // Smaller ratio for small labels
+    const barcodeImgHeight = isSmallLabel
+      ? Math.max(8, Math.min(labelHeight * barcodeHeightRatio, 12)) // Max 12mm for small labels
+      : Math.max(10, Math.min(labelHeight * barcodeHeightRatio, 20));
 
     // Generate all labels for this barcode
     for (let labelIndex = 0; labelIndex < barcode.numberOfLabels; labelIndex++) {
@@ -53,7 +62,12 @@ export const generatePDF = async (barcodes: BarcodeData[]): Promise<void> => {
       pdf.setDrawColor(200, 200, 200);
       pdf.rect(currentX, currentY, labelWidth, labelHeight);
 
-      let yPosition = currentY + padding + 1;
+      // Adaptive spacing based on label size
+      const topSpacing = isSmallLabel ? 0.5 : 1;
+      const textSpacing = isSmallLabel ? 0.5 : 1;
+      const bottomSpacing = isSmallLabel ? 0.5 : 1;
+      
+      let yPosition = currentY + padding + topSpacing;
 
       // Add header (company name) - centered
       pdf.setFontSize(headerFontSize);
@@ -61,43 +75,52 @@ export const generatePDF = async (barcodes: BarcodeData[]): Promise<void> => {
       const headerText = barcode.header || 'POS BARCODE GENERATOR';
       const headerWidth = pdf.getTextWidth(headerText);
       pdf.text(headerText, currentX + (labelWidth / 2) - (headerWidth / 2), yPosition);
-      yPosition += headerFontSize * 0.4 + 1; // Reduced spacing: font height * 0.4 + 1mm
+      yPosition += headerFontSize * 0.4 + textSpacing;
 
       // Add item name after company name (centered)
       pdf.setFontSize(itemNameFontSize);
       pdf.setFont('helvetica', 'bold');
       const itemNameWidth = pdf.getTextWidth(barcode.itemName);
       pdf.text(barcode.itemName, currentX + (labelWidth / 2) - (itemNameWidth / 2), yPosition);
-      yPosition += itemNameFontSize * 0.3 + 1; // Reduced spacing: font height * 0.3 + 1mm
+      yPosition += itemNameFontSize * 0.3 + textSpacing;
 
       // Add barcode image
       const barcodeY = yPosition;
       pdf.addImage(barcodeDataUrl, 'PNG', currentX + padding, barcodeY, barcodeImgWidth, barcodeImgHeight);
-      yPosition += barcodeImgHeight + 1; // Reduced spacing: 1mm after barcode
+      yPosition += barcodeImgHeight + textSpacing;
 
-      // Add item code below barcode (centered)
-      pdf.setFontSize(itemNameFontSize);
-      pdf.setFont('helvetica', 'normal');
-      const itemCodeWidth = pdf.getTextWidth(barcode.itemCode);
-      pdf.text(barcode.itemCode, currentX + (labelWidth / 2) - (itemCodeWidth / 2), yPosition);
-      yPosition += itemNameFontSize * 0.3 + 1; // Reduced spacing: font height * 0.3 + 1mm
+      // For small labels, skip item code to save space
+      if (!isSmallLabel) {
+        // Add item code below barcode (centered)
+        pdf.setFontSize(itemNameFontSize);
+        pdf.setFont('helvetica', 'normal');
+        const itemCodeWidth = pdf.getTextWidth(barcode.itemCode);
+        pdf.text(barcode.itemCode, currentX + (labelWidth / 2) - (itemCodeWidth / 2), yPosition);
+        yPosition += itemNameFontSize * 0.3 + textSpacing;
+      }
 
-      // Add additional lines (centered)
-      for (const line of barcode.lines) {
-        if (line.trim() && yPosition < currentY + labelHeight - 6) {
-          pdf.setFontSize(lineFontSize);
-          const lineWidth = pdf.getTextWidth(line);
-          pdf.text(line, currentX + (labelWidth / 2) - (lineWidth / 2), yPosition);
-          yPosition += lineFontSize * 0.4 + 0.5; // Reduced spacing: font height * 0.4 + 0.5mm
+      // Add additional lines (centered) - skip for very small labels
+      if (!isSmallLabel) {
+        for (const line of barcode.lines) {
+          const minSpaceForPrice = priceFontSize + bottomSpacing + padding;
+          if (line.trim() && yPosition < currentY + labelHeight - minSpaceForPrice) {
+            pdf.setFontSize(lineFontSize);
+            const lineWidth = pdf.getTextWidth(line);
+            pdf.text(line, currentX + (labelWidth / 2) - (lineWidth / 2), yPosition);
+            yPosition += lineFontSize * 0.4 + 0.3;
+          }
         }
       }
 
-      // Add MRP and Sale Price on same line at bottom (MRP left, Sale right)
+      // Add MRP and Offer Price on same line at bottom (MRP left, Offer right)
       pdf.setFontSize(priceFontSize);
       pdf.setFont('helvetica', 'bold');
       const mrpText = `MRP: Rs.${barcode.mrp}`;
-      const saleText = `Sale: Rs.${barcode.salePrice}`;
-      const priceY = currentY + labelHeight - padding - 1; // Reduced spacing: 1mm from bottom
+      const saleText = `Offer: Rs.${barcode.salePrice}`;
+      // Ensure prices don't overlap - calculate safe position
+      const minPriceY = yPosition + 0.5; // At least 0.5mm after barcode/item code
+      const maxPriceY = currentY + labelHeight - padding - bottomSpacing;
+      const priceY = Math.max(minPriceY, Math.min(maxPriceY, currentY + labelHeight - padding - bottomSpacing));
       
       // MRP on the left
       pdf.text(mrpText, currentX + padding, priceY);
@@ -111,7 +134,7 @@ export const generatePDF = async (barcodes: BarcodeData[]): Promise<void> => {
         pdf.line(currentX + padding, lineY, currentX + padding + mrpTextWidth, lineY);
       }
       
-      // Sale on the right
+      // Offer on the right
       const saleTextWidth = pdf.getTextWidth(saleText);
       pdf.text(saleText, currentX + labelWidth - padding - saleTextWidth, priceY);
 
