@@ -39,25 +39,6 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
     }
   };
 
-  const handleLineChange = (index: number, value: string) => {
-    setFormData((prev) => {
-      const newLines = [...prev.lines];
-      newLines[index] = value;
-      return { ...prev, lines: newLines };
-    });
-  };
-
-  const addLine = () => {
-    setFormData((prev) => ({ ...prev, lines: [...prev.lines, ''] }));
-  };
-
-  const removeLine = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      lines: prev.lines.filter((_, i) => i !== index),
-    }));
-  };
-
   const generateRandomEAN13 = () => {
     // Generate a random 12-digit number for EAN-13
     // First digit should be between 0-9 (not starting with 0 for better distribution)
@@ -113,19 +94,35 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border-2 border-gray-200 p-6">
-      <div className="border-b-2 border-gray-300 pb-4 mb-6">
-        <h2 className="text-3xl font-bold text-gray-800">Barcode Generator</h2>
-        <p className="text-sm text-gray-600 mt-1">Create and manage barcode labels</p>
+    <div className="bg-white/95 backdrop-blur-lg rounded-xl shadow-xl border border-white/20 p-2 sm:p-3 flex flex-col h-full min-h-0">
+      {/* Header Section */}
+      <div className="mb-2 flex-shrink-0">
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
+            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-base sm:text-lg font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Barcode Generator
+            </h2>
+            <p className="text-xs text-gray-600 font-medium">Create and manage professional barcode labels</p>
+          </div>
+        </div>
+        <div className="h-0.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-full"></div>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3 flex-1 min-h-0">
         {/* Form Section */}
-        <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label htmlFor="header" className="block text-sm font-semibold text-gray-700 mb-2">
+        <div className="lg:col-span-2 flex flex-col min-h-0 overflow-y-auto">
+          <form onSubmit={handleSubmit} className="space-y-2 flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="sm:col-span-2">
+                <label htmlFor="header" className="block text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+                  <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
                   Company Name / Header
                 </label>
                 <input
@@ -133,20 +130,23 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
                   id="header"
                   value={formData.header}
                   onChange={(e) => handleInputChange('header', e.target.value)}
-                  className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full px-2 py-1.5 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white shadow-sm"
                 />
               </div>
 
               {/* 1. Barcode Type */}
               <div>
-                <label htmlFor="barcodeType" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="barcodeType" className="block text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+                  <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                  </svg>
                   Barcode Type
                 </label>
                 <select
                   id="barcodeType"
                   value={formData.barcodeType}
                   onChange={(e) => handleInputChange('barcodeType', e.target.value as 'CODE128' | 'EAN13')}
-                  className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
+                  className="w-full px-2 py-1.5 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white shadow-sm cursor-pointer"
                 >
                   <option value="CODE128">CODE128 (Alphanumeric)</option>
                   <option value="EAN13">EAN-13 (12 digits)</option>
@@ -154,8 +154,11 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
               </div>
 
               {/* 2. Item Code */}
-              <div className={formData.barcodeType === 'EAN13' ? 'md:col-span-2' : ''}>
-                <label htmlFor="itemCode" className="block text-sm font-semibold text-gray-700 mb-2">
+              <div className={formData.barcodeType === 'EAN13' ? 'sm:col-span-2' : ''}>
+                <label htmlFor="itemCode" className="block text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+                  <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                  </svg>
                   Item Code <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2 items-stretch">
@@ -165,21 +168,29 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
                     value={formData.itemCode}
                     onChange={(e) => handleInputChange('itemCode', e.target.value)}
                     required
-                    className="flex-1 px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all min-w-0"
+                    className="flex-1 px-2 py-1.5 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all min-w-0 bg-white shadow-sm"
                   />
                   {formData.barcodeType === 'EAN13' && (
                     <button
                       type="button"
                       onClick={generateRandomEAN13}
-                      className="px-3 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold shadow-md hover:shadow-lg transition-all whitespace-nowrap flex-shrink-0"
+                      className="px-2 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold shadow-md hover:shadow-lg transition-all whitespace-nowrap flex-shrink-0 text-xs"
                       title="Generate random 12-digit code"
                     >
-                      🎲 Generate
+                      <span className="flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Generate
+                      </span>
                     </button>
                   )}
                 </div>
                 {formData.barcodeType === 'EAN13' && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                    <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                     EAN-13 requires exactly 12 digits (check digit will be auto-calculated)
                   </p>
                 )}
@@ -187,7 +198,10 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
 
               {/* 3. Item Name */}
               <div>
-                <label htmlFor="itemName" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="itemName" className="block text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+                  <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
                   Item Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -196,20 +210,23 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
                   value={formData.itemName}
                   onChange={(e) => handleInputChange('itemName', e.target.value)}
                   required
-                  className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full px-2 py-1.5 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white shadow-sm"
                 />
               </div>
 
               {/* 4. Label Size */}
               <div>
-                <label htmlFor="labelSize" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="labelSize" className="block text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+                  <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                  </svg>
                   Label Size
                 </label>
                 <select
                   id="labelSize"
                   value={formData.labelSize.labelCount}
                   onChange={(e) => handleLabelSizeChange(parseInt(e.target.value))}
-                  className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
+                  className="w-full px-2 py-1.5 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white shadow-sm cursor-pointer"
                 >
                   {LABEL_SIZES.map((size) => (
                     <option key={size.labelCount} value={size.labelCount}>
@@ -221,7 +238,10 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
 
               {/* 5. Number of Labels */}
               <div>
-                <label htmlFor="numberOfLabels" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="numberOfLabels" className="block text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+                  <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                  </svg>
                   Number of Labels
                 </label>
                 <div className="relative flex items-center">
@@ -232,7 +252,7 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
                       handleInputChange('numberOfLabels', newValue);
                       setNumberOfLabelsInput(newValue.toString());
                     }}
-                    className="absolute left-2 px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-l-lg border-2 border-r-0 border-gray-300 font-bold text-gray-700 transition-colors"
+                    className="absolute left-1 px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-l-lg border-2 border-r-0 border-gray-300 font-bold text-gray-700 transition-colors z-10 text-xs"
                     aria-label="Decrease"
                   >
                     −
@@ -245,7 +265,6 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
                       const value = e.target.value;
                       setNumberOfLabelsInput(value);
                       if (value === '') {
-                        // Allow empty input
                         return;
                       }
                       const numValue = parseInt(value);
@@ -266,7 +285,7 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
                     }}
                     min="1"
                     step="1"
-                    className="w-full px-4 py-2.5 pl-12 pr-12 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-center [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    className="w-full px-2 py-1.5 text-sm pl-8 pr-8 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-center bg-white shadow-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     style={{
                       MozAppearance: 'textfield',
                     }}
@@ -278,7 +297,7 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
                       handleInputChange('numberOfLabels', newValue);
                       setNumberOfLabelsInput(newValue.toString());
                     }}
-                    className="absolute right-2 px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-r-lg border-2 border-l-0 border-gray-300 font-bold text-gray-700 transition-colors"
+                    className="absolute right-1 px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-r-lg border-2 border-l-0 border-gray-300 font-bold text-gray-700 transition-colors z-10 text-xs"
                     aria-label="Increase"
                   >
                     +
@@ -288,7 +307,10 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
 
               {/* 6. MRP */}
               <div>
-                <label htmlFor="mrp" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="mrp" className="block text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+                  <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
                   MRP (Rs.)
                 </label>
                 <input
@@ -298,13 +320,16 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
                   onChange={(e) => handleInputChange('mrp', parseFloat(e.target.value) || 0)}
                   min="0"
                   step="0.01"
-                  className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full px-2 py-1.5 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white shadow-sm"
                 />
               </div>
 
               {/* 7. Offer Price */}
               <div>
-                <label htmlFor="salePrice" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="salePrice" className="block text-xs font-semibold text-gray-700 mb-1 flex items-center gap-1.5">
+                  <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
                   Offer Price (Rs.)
                 </label>
                 <input
@@ -314,78 +339,53 @@ export const Dashboard = ({ onAddBarcode }: DashboardProps) => {
                   onChange={(e) => handleInputChange('salePrice', parseFloat(e.target.value) || 0)}
                   min="0"
                   step="0.01"
-                  className="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full px-2 py-1.5 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white shadow-sm"
                 />
               </div>
             </div>
 
             {/* Strike MRP Option */}
-            <div className="mt-4">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.strikeMrp}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, strikeMrp: e.target.checked }))}
-                  className="w-4 h-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                />
-                <span className="text-sm font-semibold text-gray-700">
+            <div className="mt-2">
+              <label className="flex items-center space-x-2 cursor-pointer group">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={formData.strikeMrp}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, strikeMrp: e.target.checked }))}
+                    className="w-4 h-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all"
+                  />
+                </div>
+                <span className="text-xs font-semibold text-gray-700 group-hover:text-gray-900 transition-colors">
                   Strike through MRP price
                 </span>
               </label>
             </div>
 
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Additional Lines
-                </label>
-                <button
-                  type="button"
-                  onClick={addLine}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-semibold px-3 py-1 border border-blue-300 rounded-md hover:bg-blue-50 transition-colors"
-                >
-                  + Add Line
-                </button>
-              </div>
-              <div className="space-y-2">
-                {formData.lines.map((line, index) => (
-                  <div key={index} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={line}
-                      onChange={(e) => handleLineChange(index, e.target.value)}
-                      className="flex-1 px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    />
-                    {formData.lines.length > 2 && (
-                      <button
-                        type="button"
-                        onClick={() => removeLine(index)}
-                        className="px-4 py-2.5 text-red-600 hover:text-red-800 font-semibold border-2 border-red-300 rounded-lg hover:bg-red-50 transition-colors"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end pt-2 mt-2">
               <button
                 type="submit"
-                className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold shadow-md hover:shadow-lg transition-all"
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 text-xs sm:text-sm"
               >
-                Add to List
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Add to List</span>
               </button>
             </div>
           </form>
         </div>
 
         {/* Preview Section */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-4">
-            <div className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
-              <p className="text-sm font-semibold text-gray-700 mb-3 text-center">Preview</p>
+        <div className="lg:col-span-1 flex flex-col min-h-0">
+          <div className="bg-gradient-to-br from-gray-50 to-blue-50/30 backdrop-blur-sm rounded-xl shadow-xl border border-gray-200/50 p-2 flex flex-col h-full">
+            <div className="flex items-center justify-center gap-1.5 mb-2 pb-2 border-b border-gray-200 flex-shrink-0">
+              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <p className="text-xs font-bold text-gray-800">Live Preview</p>
+            </div>
+            <div className="flex-1 min-h-0 overflow-auto">
               <BarcodePreview formData={formData} />
             </div>
           </div>
